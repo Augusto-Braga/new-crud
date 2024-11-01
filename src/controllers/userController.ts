@@ -22,6 +22,7 @@ export const createUser = async (req: Request, res: Response) => {
         password: hashedPassword,
       },
     });
+
     res.status(201).json(newUser);
   } catch (error) {
     res.status(500).json({ error: "Failed to create user!" });
@@ -29,9 +30,24 @@ export const createUser = async (req: Request, res: Response) => {
 };
 
 export const listUsers = async (req: Request, res: Response) => {
+  const { id } = req.query;
+
   try {
-    const users = await prisma.user.findMany();
-    res.status(200).json(users);
+    if (id) {
+      const user = await prisma.user.findUnique({
+        where: { id: id as string },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found!" });
+      }
+
+      res.status(200).json(user);
+    } else {
+      const users = await prisma.user.findMany();
+
+      res.status(200).json(users);
+    }
   } catch (error) {
     res.status(500).json({ error: "Failed to list users" });
   }
