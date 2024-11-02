@@ -52,3 +52,39 @@ export const listUsers = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to list users" });
   }
 };
+
+export const deleteUser = async (req: Request, res: Response) => {
+  const { id } = req.query;
+
+  try {
+    const deletedUser = await prisma.user.delete({
+      where: { id: id as string },
+    });
+
+    return res.json({ message: "User deleted successfully!" });
+  } catch (error) {
+    return res.status(500).json({ message: "Error deleting user" });
+  }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+  const { id } = req.query;
+  const { name, email, password } = req.body;
+
+  const dataToUpdate: any = {};
+
+  if (name) dataToUpdate.name = name;
+  if (email) dataToUpdate.email = email;
+  if (password) dataToUpdate.password = await bcrypt.hash(password, 10);
+
+  try {
+    const updatedUser = await prisma.user.update({
+      where: { id: id as string },
+      data: dataToUpdate,
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(500).json({ error: "Cannot update user!" });
+  }
+};
