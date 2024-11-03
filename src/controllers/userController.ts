@@ -12,7 +12,9 @@ export const createUser = async (req: Request, res: Response) => {
   }
 
   try {
-    const saltRounds = 10;
+    const saltRounds = process.env.SALT_ROUNDS
+      ? parseInt(process.env.SALT_ROUNDS)
+      : 5;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     const newUser = await prisma.user.create({
@@ -73,9 +75,13 @@ export const updateUser = async (req: Request, res: Response) => {
 
   const dataToUpdate: any = {};
 
+  const saltRounds = process.env.SALT_ROUNDS
+    ? parseInt(process.env.SALT_ROUNDS)
+    : 5;
+
   if (name) dataToUpdate.name = name;
   if (email) dataToUpdate.email = email;
-  if (password) dataToUpdate.password = await bcrypt.hash(password, 10);
+  if (password) dataToUpdate.password = await bcrypt.hash(password, saltRounds);
 
   try {
     const updatedUser = await prisma.user.update({
